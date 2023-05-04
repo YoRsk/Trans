@@ -419,4 +419,4 @@ def vit_huge_patch14_224_in21k(num_classes: int = 21843, has_logits: bool = True
                               num_heads=16,
                               representation_size=1280 if has_logits else None,
                               num_classes=num_classes)
-    return
+    return model
