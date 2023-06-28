@@ -22,4 +22,12 @@ train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
 
 # Bulid a model
-#no
+Pmodel = torchvision.models.vit_b_16(pretrained=True)
+
+loss_fn = nn.CrossEntropyLoss()
+
+# Optimizer
+learning_rate = 1e-2
+optimizer = torch.optim.SGD(Pmodel.parameters(), lr=learning_rate)
+
+
