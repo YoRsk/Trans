@@ -1,4 +1,7 @@
 # created by virtualenv automatically
 venv/
+# Data
 data/
 train/data/
+
+*.JPEG
