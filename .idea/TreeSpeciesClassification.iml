@@ -3,7 +3,8 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/data/tiny-imagenet-200" />
+      <excludeFolder url="file://$MODULE_DIR$/data1" />
       <excludeFolder url="file://$MODULE_DIR$/train/data" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
@@ -11,6 +12,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
-    <option name="renderExternalDocumentation" value="true" />
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
   </component>
 </module>
