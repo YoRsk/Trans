@@ -18,6 +18,7 @@ train/data/
 # Distribution / packaging
 #.Python
 output/
+apex/
 
 build/
 develop-eggs/
