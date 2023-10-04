@@ -28,27 +28,36 @@ cd Transformer-SSL
 ```
 
 - Create a conda virtual environment and activate it:
-
+  (__Updated:python:3.9.18__)
 ```bash
 conda create -n transformer-ssl python=3.7 -y
 conda activate transformer-ssl
 ```
-
-- Install `CUDA==10.1` with `cudnn7` following
+__Updated:Trying to `pytorch 2.0.1` `CUDA==11.8`__
+- ~~Install `CUDA==10.1` with `cudnn7` following~~
   the [official installation instructions](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
-- Install `PyTorch==1.7.1` and `torchvision==0.8.2` with `CUDA==10.1`:
+- ~~Install `PyTorch==1.7.1` and `torchvision==0.8.2` with `CUDA==10.1`:~~
 
 ```bash
 conda install pytorch==1.7.1 torchvision==0.8.2 cudatoolkit=10.1 -c pytorch
 ```
 
-- Install `timm==0.3.2`:
+- Install ~~`timm==0.3.2`~~:(__Updated:Change to the newest version__)
 
 ```bash
 pip install timm==0.3.2
 ```
 
-- Install `Apex`:
+- Install ~~`Apex`~~:(__Updated: Deprecated__, change to torch.amp)  
+_New_version_:
+```bash
+git clone https://github.com/NVIDIA/apex.git
+cd apex
+git checkout f3a960f80244cf9e80558ab30f7f7e8cbf03c0a0
+python setup.py install --cuda_ext --cpp_ext
+```
+
+_Old_version:_(__Updated:not recommended__)
 
 ```bash
 git clone https://github.com/NVIDIA/apex

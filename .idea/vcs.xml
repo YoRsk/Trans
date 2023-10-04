@@ -2,8 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Transformer-SSL" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Transformer-SSL/apex" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/apex" vcs="Git" />
   </component>
 </project>

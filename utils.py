@@ -4,6 +4,8 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ze Liu
 # Modified by Zhenda Xie
+# Modified by Liuyi Peng
+# Peng: still not change
 # --------------------------------------------------------
 
 import os
@@ -15,7 +17,6 @@ try:
     from apex import amp
 except ImportError:
     amp = None
-
 
 def load_pretrained(model, ckpt_path, logger):
     model_dict = model.state_dict()
@@ -50,6 +51,7 @@ def load_checkpoint(config, model, optimizer, lr_scheduler, logger):
         config.defrost()
         config.TRAIN.START_EPOCH = checkpoint['epoch'] + 1
         config.freeze()
+
         if 'amp' in checkpoint and config.AMP_OPT_LEVEL != "O0" and checkpoint['config'].AMP_OPT_LEVEL != "O0":
             amp.load_state_dict(checkpoint['amp'])
         logger.info(f"=> loaded successfully '{config.MODEL.RESUME}' (epoch {checkpoint['epoch']})")

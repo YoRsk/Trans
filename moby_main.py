@@ -4,6 +4,7 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ze Liu
 # Modified by Zhenda Xie
+# Modified by Liuyi Peng
 # --------------------------------------------------------
 
 import os
@@ -24,14 +25,12 @@ from lr_scheduler import build_scheduler
 from optimizer import build_optimizer
 from logger import create_logger
 from utils import load_checkpoint, save_checkpoint, get_grad_norm, auto_resume_helper, reduce_tensor
-
-try:
-    # noinspection PyUnresolvedReferences
-    from apex import amp
-except ImportError:
-    amp = None
-
-
+from torch.cuda.amp import autocast, GradScaler
+# try:
+#     # noinspection PyUnrespython -m torch.distributed.launch --nproc_per_node 1 --master_port 12345  moby_main.py --cfg configs/moby_swin_tiny.yaml --data-path /data/ --amp-opt-level 0 [--batch-size 64 --output /output --tag pre-train]olvedReferences
+#     from apex import amp
+# except ImportError:
+#     amp = None
 def parse_option():
     parser = argparse.ArgumentParser('MoBY training and evaluation script', add_help=False)
     parser.add_argument('--cfg', type=str, required=True, metavar="FILE", help='path to config file', )
@@ -54,8 +53,9 @@ def parse_option():
     parser.add_argument('--accumulation-steps', type=int, help="gradient accumulation steps")
     parser.add_argument('--use-checkpoint', action='store_true',
                         help="whether to use gradient checkpointing to save memory")
-    parser.add_argument('--amp-opt-level', type=str, default='O1', choices=['O0', 'O1', 'O2'],
-                        help='mixed precision opt level, if O0, no amp is used')
+    parser.add_argument('--use_amp', action='store_true', help='use mixed precision training with AMP')
+    # parser.add_argument('--amp-opt-level', type=str, default='O1', choices=['O0', 'O1', 'O2'],
+    #                     help='mixed precision opt level, if O0, no amp is used')
     parser.add_argument('--output', default='output', type=str, metavar='PATH',
                         help='root of output folder, the full path is <output>/<model_name>/<tag> (default: output)')
     parser.add_argument('--tag', help='tag of experiment')
@@ -85,8 +85,9 @@ def main(config):
     logger.info(str(model))
 
     optimizer = build_optimizer(config, model)
-    if config.AMP_OPT_LEVEL != "O0":
-        model, optimizer = amp.initialize(model, optimizer, opt_level=config.AMP_OPT_LEVEL)
+
+    # if config.AMP_OPT_LEVEL != "O0":
+    #     model, optimizer = amp.initialize(model, optimizer, opt_level=config.AMP_OPT_LEVEL)
     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[config.LOCAL_RANK], broadcast_buffers=False)
     model_without_ddp = model.module
 
@@ -128,6 +129,7 @@ def main(config):
 
 
 def train_one_epoch(config, model, data_loader, optimizer, epoch, lr_scheduler):
+    scaler = GradScaler()  # new
     model.train()
     optimizer.zero_grad()
 
@@ -142,25 +144,39 @@ def train_one_epoch(config, model, data_loader, optimizer, epoch, lr_scheduler):
         samples_1 = samples_1.cuda(non_blocking=True)
         samples_2 = samples_2.cuda(non_blocking=True)
         targets = targets.cuda(non_blocking=True)
-
-        loss = model(samples_1, samples_2)
+        with autocast(enabled=config.USE_AMP):
+            loss = model(samples_1, samples_2)
 
         optimizer.zero_grad()
-        if config.AMP_OPT_LEVEL != "O0":
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
-            if config.TRAIN.CLIP_GRAD:
-                grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
-            else:
-                grad_norm = get_grad_norm(amp.master_params(optimizer))
+        scaler.scale(loss).backward()
+
+        if config.TRAIN.CLIP_GRAD:
+            scaler.unscale_(optimizer)
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
         else:
-            loss.backward()
-            if config.TRAIN.CLIP_GRAD:
-                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
-            else:
-                grad_norm = get_grad_norm(model.parameters())
-        optimizer.step()
+            grad_norm = get_grad_norm(model.parameters())
+
+        scaler.step(optimizer)
+        scaler.update()
         lr_scheduler.step_update(epoch * num_steps + idx)
+        # loss = model(samples_1, samples_2)
+        #
+        # optimizer.zero_grad()
+        # if config.AMP_OPT_LEVEL != "O0":
+        #     with amp.scale_loss(loss, optimizer) as scaled_loss:
+        #         scaled_loss.backward()
+        #     if config.TRAIN.CLIP_GRAD:
+        #         grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+        #     else:
+        #         grad_norm = get_grad_norm(amp.master_params(optimizer))
+        # else:
+        #     loss.backward()
+        #     if config.TRAIN.CLIP_GRAD:
+        #         grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+        #     else:
+        #         grad_norm = get_grad_norm(model.parameters())
+        # optimizer.step()
+        #lr_scheduler.step_update(epoch * num_steps + idx)
 
         torch.cuda.synchronize()
 
@@ -187,8 +203,8 @@ def train_one_epoch(config, model, data_loader, optimizer, epoch, lr_scheduler):
 if __name__ == '__main__':
     _, config = parse_option()
 
-    if config.AMP_OPT_LEVEL != "O0":
-        assert amp is not None, "amp not installed!"
+    # if config.AMP_OPT_LEVEL != "O0":
+    #     assert amp is not None, "amp not installed!"
 
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
         rank = int(os.environ["RANK"])

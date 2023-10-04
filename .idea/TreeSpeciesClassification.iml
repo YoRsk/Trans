@@ -8,7 +8,7 @@
       <excludeFolder url="file://$MODULE_DIR$/train/data" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="gee" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="C:\Users\liuyi\AppData\Local\anaconda3\envs\trans" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
