@@ -1,7 +1,5 @@
 # Self-Supervised Learning with Vision Transformers
 
-By [Zhenda Xie](https://github.com/zdaxie/)\*, [Yutong Lin](https://github.com/impiga)\*, [Zhuliang Yao](https://github.com/Howal), [Zheng Zhang](https://stupidzz.github.io/), [Qi Dai](https://www.microsoft.com/en-us/research/people/qid/), [Yue Cao](http://yue-cao.me) and [Han Hu](https://ancientmooner.github.io/)
-
 This repo is the official implementation of ["Self-Supervised Learning with Swin Transformers"](https://arxiv.org/abs/2105.04553). 
 
 **A important feature of this codebase is to include `Swin Transformer` as one of the backbones, such that we can evaluate the transferring performance of the learnt representations on down-stream tasks of object detection and semantic segmentation.** This evaluation is usually not included in previous works due to the use of ViT/DeiT, which has not been well tamed for down-stream tasks.
